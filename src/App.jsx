@@ -28,42 +28,80 @@ function TacticsField({sport}) {
   const [attack,setAttack]=useState(65);
   const [defense,setDefense]=useState(60);
   const [running,setRunning]=useState(false);
+  const [tick,setTick]=useState(0);
   const [focus,setFocus]=useState(null);
+  const [speed,setSpeed]=useState(1);
+  const lastFrame=React.useRef(0);
+  const frame=React.useRef(0);
+  useEffect(()=>{
+    if(!running){lastFrame.current=0;return;}
+    const step=(now)=>{
+      if(lastFrame.current) setTick(v=>v+(now-lastFrame.current)/1000*speed);
+      lastFrame.current=now;
+      frame.current=requestAnimationFrame(step);
+    };
+    frame.current=requestAnimationFrame(step);
+    return ()=>{cancelAnimationFrame(frame.current);lastFrame.current=0};
+  },[running,speed]);
   const layouts={
-    '4-3-3':[[22,78],[40,78],[60,78],[78,78],[30,56],[50,54],[70,56],[25,30],[50,25],[75,30]],
-    '4-4-2':[[22,78],[40,78],[60,78],[78,78],[18,53],[39,53],[61,53],[82,53],[38,28],[62,28]],
-    '3-5-2':[[27,78],[50,80],[73,78],[14,53],[32,54],[50,53],[68,54],[86,53],[37,27],[63,27]],
-    '4-2-3-1':[[22,78],[40,78],[60,78],[78,78],[39,61],[61,61],[25,43],[50,43],[75,43],[50,22]]
+    '4-3-3':[[22,77],[40,77],[60,77],[78,77],[30,54],[50,57],[70,54],[24,30],[50,26],[76,30]],
+    '4-4-2':[[22,77],[40,77],[60,77],[78,77],[18,53],[39,53],[61,53],[82,53],[39,28],[61,28]],
+    '3-5-2':[[27,77],[50,79],[73,77],[14,53],[32,53],[50,55],[68,53],[86,53],[38,28],[62,28]],
+    '4-2-3-1':[[22,77],[40,77],[60,77],[78,77],[39,61],[61,61],[25,43],[50,42],[75,43],[50,24]]
   };
-  const positions=[[50,93],...layouts[formation]];
-  const isSoccer=sport==='Soccer';
-  return <div className="tactics-module">
-    <div className="tactics-head"><span>TACTICAL SANDBOX</span><span className="tactics-live">● INTERACTIVE DEMO</span></div>
+  const positions=[[50,91],...layouts[formation]];
+  const opponent=[[50,8],[21,23],[40,23],[60,23],[79,23],[20,43],[40,44],[60,44],[80,43],[39,64],[61,64]];
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const phase=tick*1.18;
+  const offset=(i,opp=false)=>{
+    if(!running && tick===0)return [0,0];
+    const t=phase+(opp?1.8:0);
+    const intensity=opp?0.6:(0.55+attack/170);
+    const dy=opp?Math.sin(t*.75+i*.75)*2.1:(i===0?Math.sin(t)*0.35:Math.sin(t*.8+i*.7)*2.7-(attack-50)*.07);
+    const dx=Math.sin(t*.92+i*1.16)*2.5*intensity+(opp?-1:1)*Math.sin(t*.42+i*.2)*.9;
+    return [dx,dy];
+  };
+  const coords=(pos,i,opp=false)=>{const [dx,dy]=offset(i,opp);return [18+clamp(pos[0]+dx,8,92)*3.24,12+clamp(pos[1]+dy,8,94)*3.06]};
+  const ballPath=[5,7,9,8,10,6,4,2,5];
+  const ballSegment=phase*.8;
+  const idx=Math.floor(ballSegment)%ballPath.length;
+  const progress=ballSegment-Math.floor(ballSegment);
+  const bFrom=coords(positions[ballPath[idx]],ballPath[idx]);
+  const bTo=coords(positions[ballPath[(idx+1)%ballPath.length]],ballPath[(idx+1)%ballPath.length]);
+  const ball=[bFrom[0]+(bTo[0]-bFrom[0])*progress,bFrom[1]+(bTo[1]-bFrom[1])*progress-7*Math.sin(progress*Math.PI)];
+  const reset=()=>{setRunning(false);setTick(0);setFocus(null)};
+  const renderPlayer=(pos,i,opp=false)=>{const [cx,cy]=coords(pos,i,opp);const selected=!opp&&focus===i;return <g key={(opp?'opp':'home')+i} transform={`translate(${cx} ${cy})`} onClick={()=>!opp&&setFocus(i)} role={!opp?'button':undefined} tabIndex={!opp?0:undefined} onKeyDown={e=>{if(!opp&&(e.key==='Enter'||e.key===' ')){e.preventDefault();setFocus(i)}}} aria-label={!opp?`Select player ${i||'goalkeeper'}`:undefined} className={!opp?'tactical-player':''}>
+    <ellipse cy="7" rx={opp?8:11} ry={opp?3.6:5} fill={opp?'#ff8f7d':'#77ddff'} opacity={selected?'.95':'.48'} />
+    <ellipse cy="7" rx={opp?8:11} ry={opp?3.6:5} fill="none" stroke={selected?'#fff0c9':opp?'#df8b80':'#70e0ff'} strokeWidth={selected?2.5:1.3}/>
+    <path d="M-3 1L-5 8M3 1L5 8M-5-8L-9-2M5-8L9-2" fill="none" stroke={opp?'#ef8e79':i===0?'#f3cc68':'#8ddaff'} strokeWidth={opp?2.4:3.2} strokeLinecap="round"/>
+    <path d="M-4-12Q0-15 4-12L5-2Q0 1-5-2Z" fill={opp?'#b96055':i===0?'#f6ca4f':'#398fda'} stroke="#e9edf2" strokeWidth=".6"/><circle cy="-15" r="4" fill="#e9c8a9"/>
+    {!opp&&<text y="-24" fontSize="9" textAnchor="middle" fill="#fff8e9" fontWeight="800">{i===0?'GK':i}</text>}
+  </g>};
+  return <section className="tactics-module" aria-label="Interactive soccer tactics sandbox">
+    <div className="tactics-head"><span>TACTICAL SANDBOX</span><span className="tactics-live"><i/> {running?'SIMULATION PLAYING':'INTERACTIVE DEMO'}</span></div>
     <div className="tactics-stage">
-      <svg viewBox="0 0 360 330" preserveAspectRatio="xMidYMid meet" aria-label="Soccer field with movable-looking player markers in a tactical formation" role="img">
-        <defs><linearGradient id="pitchGrass" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#345943"/><stop offset="1" stopColor="#142c26"/></linearGradient><radialGradient id="playerBlue"><stop stopColor="#93e7ff"/><stop offset="1" stopColor="#2877d5"/></radialGradient><filter id="playerGlow"><feGaussianBlur stdDeviation="3"/></filter></defs>
+      <svg viewBox="0 0 360 330" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animated two-team soccer tactics pitch with 11 players per side and a passing ball">
+        <defs><linearGradient id="pitchGrass" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#385b46"/><stop offset="1" stopColor="#19362e"/></linearGradient><filter id="ballShadow"><feGaussianBlur stdDeviation="1.8"/></filter></defs>
         <rect width="360" height="330" fill="url(#pitchGrass)"/>
-        {[0,1,2,3,4,5].map(n=><rect key={n} x="0" y={n*55} width="360" height="55" fill={n%2?'#b2d9a2':'#123025'} opacity=".07"/>)}
-        <g fill="none" stroke="#d8edda" strokeWidth="1.3" opacity=".64"><rect x="18" y="12" width="324" height="306"/><path d="M18 165H342"/><circle cx="180" cy="165" r="45"/><path d="M106 12V64H254V12 M139 12V32H221V12 M106 318V266H254V318 M139 318V298H221V318"/><circle cx="180" cy="165" r="2" fill="#d8edda"/></g>
-        {positions.map(([x,y],i)=>{const cx=x*3.24+18,cy=y*3.06+12;return <g key={i} onClick={()=>setFocus(i)} style={{cursor:'pointer'}} transform={`translate(${cx} ${cy})`}>
-          <ellipse rx="13" ry="5" cy="5" fill="#8adfff" opacity=".35" filter="url(#playerGlow)"/>
-          <ellipse rx="12" ry="5.5" cy="5" fill="none" stroke={focus===i?'#ffe9ab':'#6ce7ff'} strokeWidth="1.5" opacity=".9"/>
-          <ellipse rx="5" ry="8" cy="-5" fill={i===0?'#f2d15c':'url(#playerBlue)'} stroke="#e2efff" strokeWidth=".6"/>
-          <circle cy="-15" r="4.2" fill="#e8c4a0"/>
-          <path d="M-3 0L-5 8 M3 0L5 8 M-5 -8L-9 -2 M5 -8L9 -2" stroke={i===0?'#f3d15b':'#73cfff'} strokeWidth="3" strokeLinecap="round"/>
-          <text y="-24" fill="#ffffff" textAnchor="middle" fontSize="9" fontWeight="700">{i===0?'GK':i}</text>
-        </g>})}
-        {running&&<g><circle cx="180" cy="165" r="25" fill="none" stroke="#e6c795" strokeWidth="3" strokeDasharray="12 10" className="simulation-ring"/><text x="180" y="204" textAnchor="middle" fill="#ffe6b3" fontSize="11" fontWeight="700">SCENARIO VIEW</text></g>}
+        {[0,1,2,3,4,5].map(n=><rect key={n} x="0" y={n*55} width="360" height="55" fill={n%2?'#e4e9bd':'#0d2520'} opacity=".085"/>)}
+        <g fill="none" stroke="#e1edde" strokeWidth="1.25" opacity=".73"><rect x="18" y="12" width="324" height="306"/><path d="M18 165H342"/><circle cx="180" cy="165" r="45"/><circle cx="180" cy="165" r="2" fill="#e1edde"/><path d="M106 12V64H254V12 M139 12V32H221V12 M106 318V266H254V318 M139 318V298H221V318"/></g>
+        {opponent.map((p,i)=>renderPlayer(p,i,true))}
+        {positions.map((p,i)=>renderPlayer(p,i,false))}
+        {running&&<g><circle cx={ball[0]+1} cy={ball[1]+3} r="5" fill="#071e1a" opacity=".45" filter="url(#ballShadow)"/><circle cx={ball[0]} cy={ball[1]} r="3.8" fill="#fff9e4" stroke="#392e24" strokeWidth=".7"/><path d={`M${ball[0]-1.7} ${ball[1]} l3 0 m-1.5 -1.8 v3.6`} stroke="#31302d" strokeWidth=".55"/></g>}
       </svg>
-      {focus!==null&&<div className="selected-player">PLAYER {focus===0?'GK':focus} SELECTED <button type="button" onClick={()=>setFocus(null)}>✕</button></div>}
+      <div className="pitch-legend"><span><i className="legend-home"/> YOUR SQUAD</span><span><i className="legend-away"/> OPPONENT</span><span><i className="legend-ball"/> BALL</span></div>
+      {focus!==null&&<div className="selected-player">{focus===0?'GOALKEEPER':`PLAYER ${focus}`} SELECTED <button type="button" onClick={()=>setFocus(null)} aria-label="Clear selection">×</button></div>}
     </div>
-    <div className="tactics-controls"><div className="tactics-label">FORMATION</div><div className="formation-options">{Object.keys(layouts).map(v=><button key={v} className={formation===v?'active':''} onClick={()=>setFormation(v)} type="button">{v}</button>)}</div>
-      <label className="tactics-slider">ATTACK <strong>{attack}%</strong><input type="range" min="0" max="100" value={attack} onChange={e=>setAttack(+e.target.value)}/></label>
-      <label className="tactics-slider">DEFENSE <strong>{defense}%</strong><input type="range" min="0" max="100" value={defense} onChange={e=>setDefense(+e.target.value)}/></label>
-      <button type="button" className="tactics-run" onClick={()=>setRunning(v=>!v)}>{running?'RESET SCENARIO':'▶ PREVIEW FORMATION'}</button>
-      <p className="tactics-disclaimer">{isSoccer?'Illustrative player positioning.':'Soccer formation example for demonstration.'} These controls do not calculate real match outcomes or AI probabilities.</p>
+    <div className="tactics-controls">
+      <div className="tactics-label">FORMATION</div>
+      <div className="formation-options" role="group" aria-label="Choose formation">{Object.keys(layouts).map(v=><button key={v} className={formation===v?'active':''} aria-pressed={formation===v} onClick={()=>{setFormation(v);reset()}} type="button">{v}</button>)}</div>
+      <div className="tactics-setting"><div className="tactics-setting-top"><label htmlFor="futuron-attack">ATTACK</label><strong>{attack}%</strong></div><input id="futuron-attack" type="range" min="0" max="100" value={attack} onChange={e=>setAttack(+e.target.value)} style={{'--range-progress':attack+'%'}}/></div>
+      <div className="tactics-setting"><div className="tactics-setting-top"><label htmlFor="futuron-defense">DEFENSE</label><strong>{defense}%</strong></div><input id="futuron-defense" type="range" min="0" max="100" value={defense} onChange={e=>setDefense(+e.target.value)} style={{'--range-progress':defense+'%'}}/></div>
+      <div className="tactics-actions"><button type="button" className="tactics-run" onClick={()=>setRunning(v=>!v)}>{running?'Ⅱ  PAUSE SIMULATION':tick>0?'▶  RESUME SIMULATION':'▶  RUN SIMULATION'}</button><button type="button" className="tactics-reset" onClick={reset} disabled={!running&&tick===0}>↺</button></div>
+      <div className="tactics-speed"><span>PLAYBACK SPEED</span><div>{[.5,1,2].map(v=><button type="button" className={speed===v?'active':''} key={v} onClick={()=>setSpeed(v)}>{v}×</button>)}</div></div>
+      <p className="tactics-disclaimer">{sport==='Soccer'?'Live tactical animation with player runs and passing sequences.':'Soccer tactical example shown for this demo sport.'} Illustrative movement only — no AI prediction model or real game physics is connected yet.</p>
     </div>
-  </div>;
+  </section>;
 }
 
 function App(){const [introDone,setIntroDone]=useState(()=>sessionStorage.getItem('ft_intro')==='yes'),[session,setSession]=useState(undefined),[profile,setProfile]=useState(null),[wallet,setWallet]=useState(null),[matches,setMatches]=useState([]),[predictions,setPredictions]=useState([]),[transactions,setTransactions]=useState([]),[page,setPage]=useState('home'),[selectedMatch,setSelectedMatch]=useState(null),[selection,setSelection]=useState('home'),[stake,setStake]=useState(100),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
@@ -90,6 +128,6 @@ function App(){const [introDone,setIntroDone]=useState(()=>sessionStorage.getIte
  {error&&page!=='predict'&&<div className="global-error" role="alert">{error}<button onClick={()=>setError('')}><X size={15}/></button></div>}
  <nav className="bottom-nav"><button className={['home','game','predict','locked'].includes(page)?'current':''} onClick={()=>nav('home')}><Home size={19}/><span>HOME</span></button><button className={page==='activity'?'current':''} onClick={()=>nav('activity')}><Target size={19}/><span>PICKS</span></button><button className={page==='wallet'?'current':''} onClick={()=>nav('wallet')}><Wallet size={19}/><span>WALLET</span></button><button className={page==='profile'?'current':''} onClick={()=>nav('profile')}><UserRound size={19}/><span>PROFILE</span></button></nav>
  </>}
- </div></div><div className="desktop-note"><Brand/><div>SPORTS, REIMAGINED.</div><p>A mobile-first prediction experience.<br/>Fictional fixtures • Virtual points • No payments.</p></div></div>;
+ </div></div><div className="desktop-note"><Brand/><div className="desktop-headline">BET SMARTER.<br/>SIMULATE FIRST.</div><p className="desktop-subhead">AI-built sports intelligence for more informed predictions.</p><p className="desktop-support">Simulate matchups, explore outcomes, and sharpen your edge.</p></div></div>;
 }
 export default App;
