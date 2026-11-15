@@ -45,6 +45,6 @@ function App(){const [introDone,setIntroDone]=useState(()=>sessionStorage.getIte
  {error&&page!=='predict'&&<div className="global-error" role="alert">{error}<button onClick={()=>setError('')}><X size={15}/></button></div>}
  <nav className="bottom-nav"><button className={['home','game','predict','locked'].includes(page)?'current':''} onClick={()=>nav('home')}><Home size={19}/><span>HOME</span></button><button className={page==='activity'?'current':''} onClick={()=>nav('activity')}><Target size={19}/><span>PICKS</span></button><button className={page==='wallet'?'current':''} onClick={()=>nav('wallet')}><Wallet size={19}/><span>WALLET</span></button><button className={page==='profile'?'current':''} onClick={()=>nav('profile')}><UserRound size={19}/><span>PROFILE</span></button></nav>
  </>}
- </div></div><div className="desktop-note"><Brand/><div>SPORTS, REIMAGINED.</div><p>A mobile-first prediction experience.<br/>Fictional fixtures • Virtual points • No payments.</p></div></div>;
+ </div></div><div className="desktop-note"><Brand/><div>BET SMARTER.SIMULATE FIRST.</div><p>AI-built sports intelligence for more informed predictions.<br/>Simulate matchups, explore outcomes, and sharpen your edge.</p></div></div>;
 }
 export default App;
