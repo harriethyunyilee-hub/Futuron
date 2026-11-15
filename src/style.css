@@ -4,3 +4,45 @@
 
 /* Tactical sandbox v2: interactive player markers, formation and style controls */
 .tactics-module{margin:16px 0 24px;background:#211e1b;border:1px solid #6b5843;overflow:hidden}.tactics-head{padding:12px;display:flex;align-items:center;justify-content:space-between;font-size:9px;font-weight:800;letter-spacing:1.1px;color:#e5d4b7}.tactics-live{font-size:7px;color:#9be6ba}.tactics-stage{position:relative;background:#172f24;padding:5px}.tactics-stage svg{width:100%;height:auto;display:block}.selected-player{position:absolute;bottom:13px;left:12px;padding:8px 10px;font-size:9px;color:#fce2b4;background:#201b18e8;border:1px solid #bda17b;letter-spacing:.4px}.selected-player button{background:none;border:0;color:#f9e1b8;margin-left:7px}.tactics-controls{padding:13px;background:#30251d}.tactics-label{font-size:9px;letter-spacing:1px;font-weight:800;color:#cbb398;margin-bottom:10px}.formation-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-bottom:15px}.formation-options button{background:#251d18;color:#ead9c5;border:1px solid #604b38;padding:9px 0;font-size:10px;font-weight:700}.formation-options button.active{background:#e9d3af;color:#261b13}.tactics-slider{display:block;margin:12px 0;font-size:9px;color:#d7c1a5;letter-spacing:.8px;font-weight:800}.tactics-slider strong{float:right}.tactics-slider input{width:100%;display:block;margin:8px 0;accent-color:#c8a577}.tactics-run{width:100%;padding:12px 7px;background:#e4cfac;color:#231811;font-size:10px;letter-spacing:1px;font-weight:900;border:0;margin-top:9px}.tactics-disclaimer{font-size:9px;color:#ae9c88;line-height:1.45;margin:10px 0 0}@keyframes tactical-spin{to{transform:rotate(360deg)}}.simulation-ring{transform-origin:180px 165px;animation:tactical-spin 4s linear infinite}
+
+/* FINAL FUTURON BRAND + TACTICAL CONTROLS */
+.desktop-note .desktop-headline{font-family:inherit;font-size:clamp(34px,3.9vw,64px);letter-spacing:-.045em;line-height:1.025;font-weight:900;max-width:550px;margin-top:38px;color:#faf5ed}
+.desktop-note .desktop-subhead{font-family:inherit;font-size:clamp(14px,1.22vw,19px);font-weight:600;line-height:1.5;letter-spacing:-.01em;color:#dbc1a3;max-width:470px;margin:28px 0 0}
+.desktop-note .desktop-support{font-family:inherit;font-size:clamp(13px,1.06vw,17px);line-height:1.7;color:#a99786;max-width:470px;margin:12px 0 0;letter-spacing:0}
+.tactics-module{border:1px solid #4b392d;border-radius:13px;overflow:hidden;background:#251b16;font-family:inherit;margin:20px 0 24px}
+.tactics-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:16px 17px;font-family:inherit;font-size:11px;letter-spacing:.095em;font-weight:800;color:#f5ebe0}
+.tactics-live{display:inline-flex;align-items:center;gap:6px;letter-spacing:.08em;font-family:inherit;font-size:9px;color:#d7b991}
+.tactics-live i{width:6px;height:6px;border-radius:99px;background:#8ce0b7;box-shadow:0 0 8px #8ce0b788}
+.tactics-stage{position:relative;padding:8px;background:#1b332b}
+.tactics-stage svg{width:100%;height:auto;display:block}
+.tactical-player{cursor:pointer;outline:none}
+.tactical-player:focus-visible ellipse{stroke:#fff4cc;stroke-width:3}
+.pitch-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:13px;font-size:8px;font-weight:700;letter-spacing:.06em;color:#ddd9c7;padding:10px 2px 6px}
+.pitch-legend span{display:flex;align-items:center;gap:5px}
+.pitch-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.legend-home{background:#64baf1}.legend-away{background:#da7e70}.legend-ball{background:#fff5d6;border:1px solid #9f927a}
+.tactics-controls{padding:20px 17px 19px;background:#281e18}
+.tactics-label{font-family:inherit;font-size:10px;letter-spacing:.11em;font-weight:800;color:#d6b48a;margin-bottom:11px}
+.formation-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:23px}
+.formation-options button{min-width:0;border:1px solid #5c473b;color:#f2e6d9;background:#362820;border-radius:7px;font-family:inherit;font-size:11px;letter-spacing:0;font-weight:700;padding:11px 2px;transition:background .2s,border-color .2s}
+.formation-options button.active{background:#dec09a;border-color:#dec09a;color:#211711}
+.formation-options button:hover:not(.active){border-color:#c9a57f}
+.tactics-setting{padding:15px 0 18px;border-top:1px solid #4a382e}
+.tactics-setting-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;gap:12px}
+.tactics-setting-top label{font-family:inherit;color:#f4e9db;font-weight:800;letter-spacing:.065em;font-size:12px}
+.tactics-setting-top strong{font-family:inherit;color:#d6b48a;font-size:13px;font-weight:800}
+.tactics-setting input{display:block;width:100%;height:6px;appearance:none;-webkit-appearance:none;border-radius:999px;margin:0;background:linear-gradient(to right,#d6b48a 0%,#d6b48a var(--range-progress),#57463a var(--range-progress),#57463a 100%);outline-offset:6px;cursor:pointer}
+.tactics-setting input::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:19px;height:19px;background:#f4eadb;border:4px solid #c8a47f;border-radius:99px;box-shadow:0 2px 8px #0007}
+.tactics-setting input::-moz-range-thumb{width:13px;height:13px;background:#f4eadb;border:4px solid #c8a47f;border-radius:99px}
+.tactics-actions{display:flex;gap:8px;margin-top:6px}
+.tactics-run{font-family:inherit;flex:1;min-height:46px;margin:0;border-radius:7px;background:#dec09a;color:#241913;font-weight:900;letter-spacing:.04em;font-size:11px}
+.tactics-run:hover{background:#f1d5b0}
+.tactics-reset{font-size:22px;border-radius:7px;width:48px;background:#372820;color:#dfc5a5;border:1px solid #6b513e}
+.tactics-reset:disabled{opacity:.4;cursor:not-allowed}
+.tactics-speed{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:17px;font-family:inherit;color:#ae9986;font-weight:700;font-size:9px;letter-spacing:.065em}
+.tactics-speed>div{display:flex;gap:4px}
+.tactics-speed button{border:1px solid #5b473b;background:#33251e;color:#cdb8a3;border-radius:5px;font-family:inherit;font-size:10px;padding:6px 10px}
+.tactics-speed button.active{color:#261c16;background:#dec09a;border-color:#dec09a}
+.tactics-disclaimer{font-family:inherit;font-size:10px;line-height:1.6;color:#b4a18f;margin:15px 0 0}
+.selected-player{font-family:inherit;border-radius:6px}
+@media (max-width:430px){.tactics-controls{padding:16px 12px}.formation-options{gap:5px}.formation-options button{font-size:10px}.tactics-head{padding:13px 12px;font-size:10px}.tactics-live{font-size:8px}}
